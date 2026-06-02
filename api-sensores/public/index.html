@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo Mecánico | Dashboard de Sensores</title>
+    
+    <!-- Google Fonts: Inter para tipografía moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN (Requisito Obligatorio) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ==========================================================================
+           SISTEMA DE DISEÑO Y ESTILOS CSS PERSONALIZADOS (AESTHETICS PREMIUM)
+           ========================================================================== */
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 28, 45, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            
+            /* Colores de marca y estado */
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-temp: #ef4444;    /* Rojo para temperatura */
+            --accent-pres: #10b981;    /* Verde para presión */
+            --accent-vibr: #f59e0b;    /* Amarillo para vibración */
+            
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --font-family: 'Inter', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.08) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* HEADER DE LA APLICACIÓN */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8)); }
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo span {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+            padding: 0.2rem 0.6rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            font-weight: 500;
+        }
+
+        .connection-status.offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        /* GRID PRINCIPAL */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 380px 1fr;
+            }
+        }
+
+        /* GLASSMORPHISM CARD DESIGN */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 1.75rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffffff;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        /* FORMULARIO DE REGISTRO */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.825rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            background: rgba(11, 15, 25, 0.9);
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.25rem;
+            padding-right: 2.5rem;
+        }
+
+        .row-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: var(--font-family);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* NOTIFICACIONES */
+        .toast {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .toast.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .toast.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* MÓDULO GRÁFICO Y CONTADORES */
+        .chart-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            height: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .chart-layout {
+                grid-template-columns: 180px 1fr;
+            }
+        }
+
+        .kpi-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .kpi-card {
+            background: rgba(11, 15, 25, 0.5);
+            border: 1px solid var(--card-border);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+
+        .kpi-card:hover {
+            background: rgba(11, 15, 25, 0.8);
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .kpi-card.temperatura { border-left: 4px solid var(--accent-temp); }
+        .kpi-card.temperatura .kpi-value { color: var(--accent-temp); }
+        
+        .kpi-card.presion { border-left: 4px solid var(--accent-pres); }
+        .kpi-card.presion .kpi-value { color: var(--accent-pres); }
+        
+        .kpi-card.vibracion { border-left: 4px solid var(--accent-vibr); }
+        .kpi-card.vibracion .kpi-value { color: var(--accent-vibr); }
+
+        .chart-container {
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(11, 15, 25, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--card-border);
+        }
+
+        /* CARD DE LA TABLA Y CONTROL DE FILTRO */
+        .table-card {
+            margin-top: 2rem;
+        }
+
+        .table-header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .table-header-controls {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .filter-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filter-wrapper label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            min-width: 180px;
+            background-color: rgba(11, 15, 25, 0.6);
+        }
+
+        /* TABLA DENTRO DEL CONTENEDOR CON SCROLL */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.925rem;
+            background: rgba(11, 15, 25, 0.2);
+        }
+
+        th {
+            background-color: rgba(22, 28, 45, 0.9);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 1rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* BADGES PARA TIPOS DE SENSOR */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-temp {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .badge-pres {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-vibr {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* ACCIONES EN LA TABLA */
+        .btn-action-delete {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.35rem;
+            border-radius: 4px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .btn-action-delete:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            color: var(--card-border);
+            margin-bottom: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-gauge-high"></i>
+                <h1>Monitoreo Mecánico</h1>
+                <span>IUDIGITAL - EA3</span>
+            </div>
+            <div id="connectionStatus" class="connection-status">
+                <span class="status-dot"></span>
+                <span id="statusText">Conectando a API...</span>
+            </div>
+        </header>
+
+        <!-- DASHBOARD GRID -->
+        <div class="dashboard-grid">
+            
+            <!-- TARJETA FORMULARIO: REGISTRAR SENSOR (POST /api/sensores) -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    Registrar Sensor
+                </h2>
+                
+                <form id="sensorForm">
+                    <div class="form-group">
+                        <label for="nombre">Nombre del Sensor</label>
+                        <input type="text" id="nombre" class="form-control" placeholder="Ej: Sensor Presión Turbina A" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo de Sensor</label>
+                        <select id="tipo" class="form-control" required>
+                            <option value="" disabled selected>Seleccione el tipo</option>
+                            <option value="temperatura">Temperatura</option>
+                            <option value="presion">Presión</option>
+                            <option value="vibracion">Vibración</option>
+                        </select>
+                    </div>
+
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label for="valor">Valor</label>
+                            <input type="number" step="0.01" id="valor" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unidad">Unidad</label>
+                            <input type="text" id="unidad" class="form-control" placeholder="Ej: °C, PSI, mm/s" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ubicacion">Ubicación</label>
+                        <input type="text" id="ubicacion" class="form-control" placeholder="Ej: Turbina Principal B" required>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Registro
+                    </button>
+                </form>
+
+                <div id="formToast" class="toast"></div>
+            </div>
+
+            <!-- TARJETA VISUALIZACIÓN: CHART Y CONTADORES -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    Distribución de Sensores
+                </h2>
+
+                <div class="chart-layout">
+                    <!-- KPI CONTADORES DINÁMICOS -->
+                    <div class="kpi-container">
+                        <div class="kpi-card temperatura">
+                            <span id="kpiTemp" class="kpi-value">0</span>
+                            <span class="kpi-label">Temp (°C)</span>
+                        </div>
+                        <div class="kpi-card presion">
+                            <span id="kpiPres" class="kpi-value">0</span>
+                            <span class="kpi-label">Presión (PSI)</span>
+                        </div>
+                        <div class="kpi-card vibracion">
+                            <span id="kpiVibr" class="kpi-value">0</span>
+                            <span class="kpi-label">Vibración</span>
+                        </div>
+                    </div>
+
+                    <!-- CHART.JS CANVAS -->
+                    <div class="chart-container">
+                        <canvas id="chartSensores"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTADO Y FILTRO DE SENSORES -->
+        <div class="card table-card">
+            <div class="table-header-controls">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-list-check"></i>
+                    Sensores Registrados
+                </h2>
+                
+                <!-- FILTRO OBLIGATORIO -->
+                <div class="filter-wrapper">
+                    <label for="filtroTipo">Filtrar por Tipo:</label>
+                    <select id="filtroTipo" class="form-control filter-select">
+                        <option value="">Todos los Tipos</option>
+                        <option value="temperatura">Temperatura</option>
+                        <option value="presion">Presión</option>
+                        <option value="vibracion">Vibración</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <div class="table-responsive">
+                <table id="tablaSensores">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Valor Actual</th>
+                            <th>Ubicación</th>
+                            <th>Fecha Registro</th>
+                            <th style="width: 80px; text-align: center;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCuerpo">
+                        <!-- Las filas se renderizan dinámicamente mediante javascript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="tableEmptyState" class="empty-state" style="display: none;">
+                <i class="fa-solid fa-folder-open"></i>
+                <p>No se encontraron sensores registrados.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de lógica de la aplicación -->
+    <script src="app.js"></script>
+</body>
+</html>

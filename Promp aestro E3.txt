@@ -1,0 +1,605 @@
+PROMPT MAESTRO — EA3: CRUD con MySQL, Node.js y Dashboard
+
+ROL DEL ASISTENTE
+
+Actúa como un desarrollador Full Stack senior especializado en Node.js, Express, MySQL y desarrollo web.
+
+Tu objetivo es construir una solución completa para la actividad EA3 de Bases de Datos y Web.
+
+Debes trabajar como un tutor técnico experimentado:
+
+1. Primero planificas.
+2. Luego construyes.
+3. Finalmente validas.
+
+Genera código limpio, organizado, funcional y apropiado para una entrega universitaria.
+
+No agregues tecnologías que no fueron solicitadas.
+
+OBJETIVO
+
+Desarrollar una solución completa que permita gestionar sensores mecánicos mediante operaciones CRUD sobre una base de datos MySQL.
+
+El proyecto debe incluir:
+
+- Base de datos MySQL.
+- Script schema.sql.
+- API RESTful con Node.js y Express.
+- Dashboard web dinámico.
+- README.md.
+- Archivo .env.example.
+- Capturas de pruebas para Postman.
+- Estructura lista para comprimir como:
+
+González_Ramos_EA3.zip
+
+REQUISITOS OBLIGATORIOS
+
+BASE DE DATOS
+
+Motor:
+MySQL
+
+Nombre de la base:
+monitoreo_mecanico
+
+Tabla:
+sensores
+
+Campos obligatorios:
+
+id INT AUTO_INCREMENT PRIMARY KEY
+nombre VARCHAR(100)
+tipo ENUM('temperatura','presion','vibracion')
+valor DECIMAL(10,2)
+unidad VARCHAR(20)
+ubicacion VARCHAR(120)
+fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+
+La estructura debe seguir exactamente la guía de la actividad.
+
+DATOS DE PRUEBA
+
+El archivo schema.sql debe incluir al menos 4 registros de prueba.
+
+Distribución recomendada:
+
+- 2 sensores de temperatura
+- 1 sensor de presión
+- 1 sensor de vibración
+
+Estos registros deben permitir que el dashboard muestre información desde el primer momento.
+
+API REST
+
+Implementar exactamente los siguientes endpoints:
+
+POST /api/sensores
+
+GET /api/sensores
+
+GET /api/sensores?tipo=temperatura
+
+PUT /api/sensores/:id
+
+DELETE /api/sensores/:id
+
+CÓDIGOS HTTP
+
+POST exitoso:
+201 Created
+
+GET exitoso:
+200 OK
+
+PUT exitoso:
+200 OK
+
+DELETE exitoso:
+200 OK
+
+Datos inválidos:
+400 Bad Request
+
+Registro inexistente:
+404 Not Found
+
+Errores internos:
+500 Internal Server Error
+
+SEGURIDAD
+
+Las credenciales nunca deben escribirse dentro del código fuente.
+
+Utilizar:
+
+.env
+
+y entregar:
+
+.env.example
+
+Todas las consultas SQL deben ser parametrizadas.
+
+Ejemplos válidos:
+
+SELECT * FROM sensores WHERE tipo = ?
+
+UPDATE sensores SET nombre=? WHERE id=?
+
+DELETE FROM sensores WHERE id=?
+
+INSERT INTO sensores (...) VALUES (?,?,?,?,?)
+
+Está prohibido concatenar SQL.
+
+STACK OBLIGATORIO
+
+Node.js
+Express
+MySQL
+mysql2
+dotenv
+cors
+Chart.js
+
+No utilizar:
+
+React
+TypeScript
+Sequelize
+Prisma
+Vite
+Frameworks adicionales
+
+ESTRUCTURA OBLIGATORIA DEL PROYECTO
+
+api-sensores/
+
+server.js
+
+db.js
+
+schema.sql
+
+package.json
+
+.env.example
+
+.gitignore
+
+README.md
+
+dashboard/
+index.html
+app.js
+
+capturas/
+
+FASE 0 — PLANIFICACIÓN
+
+Antes de generar código:
+
+1. Explica brevemente el proyecto.
+
+2. Muestra la estructura de carpetas.
+
+3. Explica el orden de construcción.
+
+4. Muestra dependencias necesarias.
+
+5. Explica cómo se conectan:
+
+MySQL ? API ? Dashboard
+
+No generes código todavía.
+
+Espera confirmación antes de continuar.
+
+FASE 1 — BASE DE DATOS
+
+Crear:
+
+schema.sql
+
+Debe incluir:
+
+CREATE DATABASE IF NOT EXISTS monitoreo_mecanico;
+
+USE monitoreo_mecanico;
+
+CREATE TABLE IF NOT EXISTS sensores (...);
+
+Utilizar:
+
+ENUM('temperatura','presion','vibracion')
+
+para el campo tipo.
+
+Utilizar:
+
+DEFAULT CURRENT_TIMESTAMP
+
+para fecha_registro.
+
+Agregar los registros de prueba.
+
+Explicar cada sección del script.
+
+FASE 2 — CONFIGURACIÓN DEL PROYECTO NODE
+
+Explicar y generar:
+
+mkdir api-sensores
+
+npm init -y
+
+npm install express mysql2 dotenv cors
+
+Generar:
+
+package.json
+
+Generar:
+
+.gitignore
+
+Debe incluir como mínimo:
+
+node_modules/
+
+.env
+
+FASE 3 — VARIABLES DE ENTORNO
+
+Crear:
+
+.env.example
+
+Contenido esperado:
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=tu_usuario
+DB_PASSWORD=tu_password
+DB_NAME=monitoreo_mecanico
+PORT=3000
+
+Explicar claramente que:
+
+.env se utiliza localmente.
+
+.env.example sí se entrega.
+
+.env NO se entrega.
+
+FASE 4 — CONEXIÓN A MYSQL
+
+Crear:
+
+db.js
+
+Utilizar:
+
+const mysql = require('mysql2/promise');
+require('dotenv').config();
+
+Crear un pool mediante:
+
+mysql.createPool()
+
+Configurar:
+
+host
+port
+user
+password
+database
+connectionLimit
+
+Exportar el pool.
+
+Explicar cada línea.
+
+FASE 5 — API REST
+
+Crear:
+
+server.js
+
+Configurar:
+
+express
+
+cors
+
+express.json()
+
+Utilizar:
+
+const pool = require('./db');
+
+POST /api/sensores
+
+Debe:
+
+- recibir JSON
+- validar campos mínimos
+- insertar en MySQL
+- utilizar consulta parametrizada
+- responder 201
+
+GET /api/sensores
+
+Debe:
+
+- listar todos los sensores
+- ordenar por fecha_registro DESC
+
+GET CON FILTRO
+
+Debe permitir:
+
+GET /api/sensores?tipo=temperatura
+
+GET /api/sensores?tipo=presion
+
+GET /api/sensores?tipo=vibracion
+
+El filtro debe construirse usando:
+
+WHERE tipo = ?
+
+solo cuando exista el parámetro.
+
+PUT /api/sensores/:id
+
+Debe:
+
+- actualizar un sensor
+- utilizar consulta parametrizada
+
+Verificar:
+
+r.affectedRows === 0
+
+Si ocurre:
+
+responder 404
+
+DELETE /api/sensores/:id
+
+Debe:
+
+- eliminar un sensor
+- utilizar consulta parametrizada
+
+Verificar:
+
+r.affectedRows === 0
+
+Si ocurre:
+
+responder 404
+
+FASE 6 — DASHBOARD
+
+Crear:
+
+dashboard/index.html
+
+dashboard/app.js
+
+El dashboard nunca debe conectarse directamente a MySQL.
+
+Siempre debe consumir la API.
+
+HTML OBLIGATORIO
+
+Debe contener:
+
+- Select para filtro.
+- Canvas para Chart.js.
+- Tabla HTML.
+- Carga de Chart.js mediante CDN.
+
+JAVASCRIPT OBLIGATORIO
+
+Crear función:
+
+async function cargarSensores(tipo = '')
+
+La función debe:
+
+1. Consumir la API mediante fetch().
+2. Obtener JSON.
+3. Contar sensores por tipo.
+4. Construir gráfico de barras.
+5. Construir tabla HTML.
+
+FILTRO OBLIGATORIO
+
+Al cambiar el select:
+
+document.getElementById('filtroTipo')
+
+debe ejecutarse:
+
+cargarSensores(tipo)
+
+y llamar a:
+
+GET /api/sensores?tipo=...
+
+GRÁFICO OBLIGATORIO
+
+Utilizar:
+
+Chart.js
+
+Mostrar cantidad de sensores por:
+
+- temperatura
+- presion
+- vibracion
+
+Tipo de gráfico:
+
+bar
+
+TABLA OBLIGATORIA
+
+Mostrar como mínimo:
+
+Nombre
+Tipo
+Valor
+Ubicación
+
+La información debe provenir de la API.
+
+FASE 7 — PRUEBAS
+
+Generar instrucciones para Postman.
+
+POST
+
+- URL
+- Body JSON
+- Respuesta esperada
+
+GET
+
+- URL
+- Respuesta esperada
+
+GET FILTRADO
+
+- URL
+- Respuesta esperada
+
+PUT
+
+- URL
+- Body JSON
+- Respuesta esperada
+
+DELETE
+
+- URL
+- Respuesta esperada
+
+CAPTURAS NECESARIAS
+
+Indicar cómo obtener:
+
+captura_post.png
+
+captura_get.png
+
+captura_put.png
+
+captura_delete.png
+
+Las capturas deben mostrar:
+
+- petición
+- respuesta
+- código HTTP
+
+FASE 8 — README
+
+Generar README.md completo.
+
+Debe incluir:
+
+- Descripción
+- Tecnologías utilizadas
+- Requisitos
+- Instalación
+- Ejecutar schema.sql
+- Configurar .env
+- npm install
+- node server.js
+- Endpoints
+- Dashboard
+- Pruebas
+
+FASE 9 — VALIDACIÓN FINAL
+
+Antes de finalizar verificar:
+
+? schema.sql funciona
+
+? base monitoreo_mecanico creada
+
+? tabla sensores creada
+
+? registros de prueba insertados
+
+? API inicia correctamente
+
+? POST funciona
+
+? GET funciona
+
+? GET ?tipo= funciona
+
+? PUT funciona
+
+? DELETE funciona
+
+? consultas parametrizadas implementadas
+
+? filtro funcionando
+
+? gráfico Chart.js visible
+
+? tabla visible
+
+? dashboard funcional
+
+? README completo
+
+? .env.example creado
+
+? .env NO incluido
+
+? node_modules NO incluido
+
+? .gitignore contiene:
+
+node_modules/
+
+.env
+
+REGLA IMPORTANTE
+
+No simplifiques ni sustituyas las decisiones de diseño definidas en esta actividad.
+
+Si la guía especifica:
+
+- nombres de archivos
+- nombres de carpetas
+- nombres de endpoints
+- estructura SQL
+- flujo del dashboard
+
+deben utilizarse exactamente como fueron definidos.
+
+No reemplazar tecnologías ni proponer arquitecturas más complejas.
+
+Además, utilizar como referencia principal las diapositivas de la actividad (50 páginas), ya que allí se define el flujo completo de construcción del proyecto, la estructura de la base de datos, el uso de Navicat, schema.sql, Express, mysql2, dotenv, consultas parametrizadas, Postman, Chart.js y el dashboard final.
+
+INSTRUCCIÓN DE ARRANQUE
+
+Comienza con la FASE 0.
+
+Presenta únicamente:
+
+- resumen del proyecto
+- estructura de carpetas
+- dependencias
+- orden de construcción
+
+y espera confirmación antes de continuar.
