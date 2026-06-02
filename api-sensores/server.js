@@ -215,3 +215,25 @@ app.delete('/api/sensores/:id', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Servidor de monitoreo escuchando en el puerto ${PORT}`);
 });
+
+// Ruta de depuración: devuelve el contenido de public/index.html (lectura directa)
+const fs = require('fs');
+app.get('/__debug_index', (req, res) => {
+    const p = path.join(__dirname, 'public', 'index.html');
+    fs.readFile(p, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error leyendo index.html:', err);
+            return res.status(500).send('Error leyendo index.html');
+        }
+        res.type('html').send(data);
+    });
+});
+
+// Rutas explícitas para servir el frontend (fallback si express.static no funciona)
+app.get(['/', '/index.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/app.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'app.js'));
+});
