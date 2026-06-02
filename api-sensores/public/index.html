@@ -346,7 +346,7 @@
 
         .chart-container {
             position: relative;
-            min-height: 250px;
+            height: 320px; /* altura fija para evitar crecimiento infinito */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -354,6 +354,17 @@
             border-radius: 12px;
             padding: 1rem;
             border: 1px solid var(--card-border);
+        }
+
+        /* Asegurar que el canvas ocupe todo el contenedor sin estirarse indefinidamente */
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Evitar que las tarjetas KPI se estiren o colapsen inesperadamente */
+        .kpi-card {
+            flex: 0 0 auto;
         }
 
         /* CARD DE LA TABLA Y CONTROL DE FILTRO */
