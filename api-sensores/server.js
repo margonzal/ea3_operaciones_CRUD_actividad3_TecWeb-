@@ -21,9 +21,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
-// Log para depuración: ruta absoluta que Express usa para servir archivos estáticos
-const staticPath = path.join(__dirname, 'public');
-console.log('Static files served from:', staticPath);
 
 // ==========================================
 // ENDPOINTS
@@ -216,18 +213,7 @@ app.listen(PORT, () => {
     console.log(`Servidor de monitoreo escuchando en el puerto ${PORT}`);
 });
 
-// Ruta de depuración: devuelve el contenido de public/index.html (lectura directa)
-const fs = require('fs');
-app.get('/__debug_index', (req, res) => {
-    const p = path.join(__dirname, 'public', 'index.html');
-    fs.readFile(p, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error leyendo index.html:', err);
-            return res.status(500).send('Error leyendo index.html');
-        }
-        res.type('html').send(data);
-    });
-});
+// (Debug routes removed)
 
 // Rutas explícitas para servir el frontend (fallback si express.static no funciona)
 app.get(['/', '/index.html'], (req, res) => {
